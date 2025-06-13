@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="Glenn Davis" />
+
+<meta name="date" content="2025-06-10" />
+
+<title>Implicitization</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+<style type="text/css">.tabwid {
+font-size: initial;
+padding-bottom: 1em;
+}
+.tabwid table{
+border-spacing:0px !important;
+border-collapse:collapse;
+line-height:1;
+margin-left:auto;
+margin-right:auto;
+border-width: 0;
+border-color: transparent;
+caption-side: top;
+}
+.tabwid-caption-bottom table{
+caption-side: bottom;
+}
+.tabwid_left table{
+margin-left:0;
+}
+.tabwid_right table{
+margin-right:0;
+}
+.tabwid td, .tabwid th {
+padding: 0;
+}
+.tabwid a {
+text-decoration: none;
+}
+.tabwid thead {
+background-color: transparent;
+}
+.tabwid tfoot {
+background-color: transparent;
+}
+.tabwid table tr {
+background-color: transparent;
+}
+.katex-display {
+margin: 0 0 !important;
+}
+</style>
+<script>document.addEventListener("DOMContentLoaded", function(event) {
+  var els = document.querySelectorAll(".tabwid");
+  var tabwid_link = document.querySelector('link[href*="tabwid.css"]')
+  if (tabwid_link === null) {
+    const tabwid_styles = document.evaluate("//style[contains(., 'tabwid')]", document, null, XPathResult.ANY_TYPE, null );
+    tabwid_link = tabwid_styles.iterateNext();
+  }
+
+  Array.prototype.forEach.call(els, function(template) {
+      const dest = document.createElement("div");
+      template.parentNode.insertBefore(dest, template.nextSibling)
+      dest.setAttribute("class", "flextable-shadow-host");
+      const fantome = dest.attachShadow({mode: 'open'});
+      fantome.appendChild(template);
+      if (tabwid_link !== null) {
+        fantome.appendChild(tabwid_link.cloneNode(true));
+      }
+  });
+
+  const shadowHosts = document.querySelectorAll('.flextable-shadow-host:not(:has(div > table.no-shadow-dom))');
+  shadowHosts.forEach(host => {
+    if (host.shadowRoot) {
+      const spanElements = host.shadowRoot.querySelector('div > table > caption > span[id]');
+      if (spanElements) {
+        const id = spanElements.getAttribute("id");
+        host.setAttribute("id", id);
+      }
+    }
+  });
+
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+
+
+
+<style type="text/css">
+
+div.csl-bib-body { }
+div.csl-entry {
+clear: both;
+}
+.hanging div.csl-entry {
+margin-left:2em;
+text-indent:-2em;
+}
+div.csl-left-margin {
+min-width:2em;
+float:left;
+}
+div.csl-right-inline {
+margin-left:2em;
+padding-left:1em;
+}
+div.csl-indent {
+margin-left: 2em;
+}
+</style>
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Implicitization</h1>
+<h4 class="author">Glenn Davis</h4>
+<h4 class="date">2025-06-10</h4>
+
+
+<div id="TOC">
+<ul>
+<li><a href="#introduction" id="toc-introduction">Introduction</a></li>
+<li><a href="#the-equations-for-n-12-and-3-arcs" id="toc-the-equations-for-n-12-and-3-arcs">The Equations for <span class="math inline">\(n\)</span> = 1,2, and 3 arcs</a></li>
+<li><a href="#supporting-hyperplanes-of-partial-z_n" id="toc-supporting-hyperplanes-of-partial-z_n">Supporting Hyperplanes of
+<span class="math inline">\(\partial Z_n\)</span></a></li>
+<li><a href="#summary" id="toc-summary">Summary</a></li>
+<li><a href="#references" id="toc-references">References</a></li>
+<li><a href="#session-information" id="toc-session-information">Session
+Information</a></li>
+</ul>
+</div>
+
+<style type="text/css">
+body {
+max-width: 725px; 
+}
+</style>
+<p><br><br></p>
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p>In the <a href="../doc/polarzonoid-guide.html">User Guide</a>
+vignette it is shown that there is are homeomorphisms <span class="math display">\[\begin{equation}
+A_n  ~~ \longleftrightarrow  ~~ \partial Z_n ~~ \longleftrightarrow ~~
+\mathbb{S}^{2n}
+\end{equation}\]</span> where <span class="math inline">\(A_n\)</span>
+is the space of <span class="math inline">\(n\)</span> or fewer pairwise
+disjoint arcs in the circle, and <span class="math inline">\(Z_n\)</span> is the polar zonoid in <span class="math inline">\(\mathbb{R}^{2n+1}\)</span>. The forward direction
+<span class="math inline">\(\partial Z_n ~~ \to ~~
+\mathbb{S}^{2n}\)</span> is the trivial projection onto the unit sphere
+centered at <span class="math inline">\((0,...0,\pi)\)</span>. But the
+reverse direction requires intersecting a ray with <span class="math inline">\(\partial Z_n\)</span>, which is non-trivial. The
+function in the package that performs this intersection is
+<code>boundaryfromsphere()</code>. It expresses <span class="math inline">\(\partial Z_n\)</span> as the level set of a
+real-valued function, and uses <code>uniroot()</code> to solve for the
+intersection point.</p>
+<p>In this vignette, we outline how <span class="math inline">\(\partial
+Z_n\)</span> is defined parametrically and how the real-valued function
+is derived. This process is called <em>implicitization</em>, see <span class="citation">[1]</span>. In the current version of the package, the
+implicitization has only been computed for <span class="math inline">\(n\)</span>=1,2, and 3.</p>
+<p>Throughout this vignette we think of <span class="math inline">\(\partial Z_n \subseteq \mathbb{R}^{2n+1}\)</span>
+and identify the latter with points <span class="math inline">\((z_1,...,z_n,L)\)</span> where <span class="math inline">\(z_i\)</span> are complex numbers and <span class="math inline">\(L\)</span> is real.</p>
+<p>Assume first that <span class="math inline">\(n{=}1\)</span> so there
+is a single arc in the circle, i.e. a point in <span class="math inline">\(A_1\)</span>. We parameterize the arc by its first
+and last endpoints <span class="math inline">\(u_1\)</span> and <span class="math inline">\(v_1\)</span>, both on the unit circle in the
+complex plane, and proceeding counterclockwise from <span class="math inline">\(u_1\)</span> to <span class="math inline">\(v_1\)</span>. Let the length of the arc be <span class="math inline">\(l_1\)</span>, so that <span class="math inline">\(v_1 = u_1 e^{i l_1}\)</span>. It is not hard to
+show that the map <span class="math inline">\(A_1 \to \partial
+Z_1\)</span> is given by <span class="math display">\[\begin{equation}
+(u_1,v_1) \mapsto ( ~(v_1{-}u_1)/i, ~ l_1 ~) ~=~ (z_1,L)
+\end{equation}\]</span> where <span class="math inline">\(z_1 :=
+(v_1{-}u_1)/i\)</span>. Similarly, when <span class="math inline">\(n{=}2\)</span>, it is easy to show that the map
+<span class="math inline">\(A_2 \to \partial Z_2\)</span> is given by:
+<span class="math display">\[\begin{equation}
+(u_1,v_1,u_2,v_2) \mapsto ( ~ \left( v_1{-}u_1 + v_2{-}u_2 \right)/i,  ~
+\left( v_1^2{-}u_1^2 + v_2^2{-}u_2^2 \right)/(2i), ~ l_1{+}l_2 ~)  ~=~
+(z_1,z_2,L)
+\end{equation}\]</span> and so on for <span class="math inline">\(n \ge
+3\)</span>. Since <span class="math inline">\(u_i\)</span> and <span class="math inline">\(v_i\)</span> are unit vectors, <span class="math inline">\(u_i \overline{u_i} = 1\)</span> and <span class="math inline">\(v_i \overline{v_i} = 1\)</span> where the overline
+denotes complex conjugate. It follows easily that: <span class="math display">\[\begin{align}
+\overline{z_1} &amp;= \big( u_2 v_2 (v_1 - u_1) + u_1 v_1(v_2 - u_2)
+\big) \left( -i / (u_1 u_2 v_1 v_2) \right) \\
+\overline{z_2} &amp;= \big( u_2^2 v_2^2 (v_1^2 - u_1^2) + u_1^2
+v_1^2(v_2^2 - u_2^2) \big) \left( -i / (2 u_1^2 u_2^2 v_1^2 v_2^2)
+\right)
+\end{align}\]</span></p>
+<p>And using Euler’s formula, one can show: <span class="math display">\[\begin{align}
+\sin(L/2)  &amp;=  \frac{v_1 v_2 - u_1 u_2}{2i} ~~ \frac{e ^{-iL/2}}{u_1
+u_2}  \\
+\cos(L/2)  &amp;=  \frac{v_1 v_2 + u_1 u_2}{2}  ~~ \frac{e ^{-iL/2}}{u_1
+u_2}
+\end{align}\]</span></p>
+<p>The expressions for <span class="math inline">\(n{=}1\)</span> and
+<span class="math inline">\(n{=}3\)</span> are similar. These
+right-hand-sides are “rational enough” that algebraic geometry can be
+used for implicitization. We use the Rational Implicitization algorithm
+in Chapter 3, Section 3 of <span class="citation">[1]</span>. The fact
+that second term in each RHS is a unit complex number plays a
+simplifying role. The results are in the next section.</p>
+<p><br><br></p>
+</div>
+<div id="the-equations-for-n-12-and-3-arcs" class="section level1">
+<h1>The Equations for <span class="math inline">\(n\)</span> = 1,2, and
+3 arcs</h1>
+<p>Throughout this section we assume that <span class="math inline">\(L
+\in [0,2\pi]\)</span>. With lots of help from Macaulay2 <span class="citation">[2]</span>, followed by manual rearrangement, one can
+show that for <span class="math inline">\(n\)</span> = 1,2, and 3 that
+<span class="math display">\[\begin{equation}
+(z_1,...,z_n,L) \in \partial Z_n ~~~ \text{ iff } ~~~ |
+\gamma_n(z_1,...,z_n,L) | = \rho_n(z_1,...,z_n,L)  
+\end{equation}\]</span> and <span class="math display">\[\begin{equation}
+(z_1,...,z_n,L) \in  Z_n ~~~ \text{ iff } ~~~ | \gamma_n(z_1,...,z_n,L)
+|  \le  \rho_n(z_1,...,z_n,L)  
+\end{equation}\]</span> where <span class="math inline">\(\gamma_n()\)</span> is a complex-valued function,
+and <span class="math inline">\(\rho_n()\)</span> is a real-valued
+function. The details of this are complicated, especially for <span class="math inline">\(n{=}3\)</span>, and are omitted. For <span class="math inline">\(n{=}4\)</span>, Macaulay2 runs out of memory and
+cannot finish; but I conjecture that these two functions exist for all
+<span class="math inline">\(n\)</span>. For small <span class="math inline">\(n\)</span>, they are given in this table: <br></p>
+<div class="tabwid"><style>.cl-d0c66150{}.cl-d0b9bea0{font-family:'Arial';font-size:11pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-d0c1080e{margin:0;text-align:center;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-d0c129a6{width:0.75in;background-color:transparent;vertical-align: middle;border-bottom: 2pt solid rgba(0, 0, 0, 1.00);border-top: 2pt solid rgba(0, 0, 0, 1.00);border-left: 2pt solid rgba(0, 0, 0, 1.00);border-right: 2pt solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-d0c129b0{width:4.2in;background-color:transparent;vertical-align: middle;border-bottom: 2pt solid rgba(0, 0, 0, 1.00);border-top: 2pt solid rgba(0, 0, 0, 1.00);border-left: 2pt solid rgba(0, 0, 0, 1.00);border-right: 2pt solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-d0c129b1{width:0.75in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(190, 190, 190, 1.00);border-top: 2pt solid rgba(0, 0, 0, 1.00);border-left: 2pt solid rgba(0, 0, 0, 1.00);border-right: 1pt solid rgba(190, 190, 190, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-d0c129ba{width:4.2in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(190, 190, 190, 1.00);border-top: 2pt solid rgba(0, 0, 0, 1.00);border-left: 1pt solid rgba(190, 190, 190, 1.00);border-right: 1pt solid rgba(190, 190, 190, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-d0c129bb{width:4.2in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(190, 190, 190, 1.00);border-top: 2pt solid rgba(0, 0, 0, 1.00);border-left: 1pt solid rgba(190, 190, 190, 1.00);border-right: 2pt solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-d0c129bc{width:0.75in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(190, 190, 190, 1.00);border-top: 1pt solid rgba(190, 190, 190, 1.00);border-left: 2pt solid rgba(0, 0, 0, 1.00);border-right: 1pt solid rgba(190, 190, 190, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-d0c129bd{width:4.2in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(190, 190, 190, 1.00);border-top: 1pt solid rgba(190, 190, 190, 1.00);border-left: 1pt solid rgba(190, 190, 190, 1.00);border-right: 1pt solid rgba(190, 190, 190, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-d0c129c4{width:4.2in;background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(190, 190, 190, 1.00);border-top: 1pt solid rgba(190, 190, 190, 1.00);border-left: 1pt solid rgba(190, 190, 190, 1.00);border-right: 2pt solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-d0c129c5{width:0.75in;background-color:transparent;vertical-align: middle;border-bottom: 2pt solid rgba(0, 0, 0, 1.00);border-top: 1pt solid rgba(190, 190, 190, 1.00);border-left: 2pt solid rgba(0, 0, 0, 1.00);border-right: 1pt solid rgba(190, 190, 190, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-d0c129c6{width:4.2in;background-color:transparent;vertical-align: middle;border-bottom: 2pt solid rgba(0, 0, 0, 1.00);border-top: 1pt solid rgba(190, 190, 190, 1.00);border-left: 1pt solid rgba(190, 190, 190, 1.00);border-right: 1pt solid rgba(190, 190, 190, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-d0c129c7{width:4.2in;background-color:transparent;vertical-align: middle;border-bottom: 2pt solid rgba(0, 0, 0, 1.00);border-top: 1pt solid rgba(190, 190, 190, 1.00);border-left: 1pt solid rgba(190, 190, 190, 1.00);border-right: 2pt solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table data-quarto-disable-processing="true" class="cl-d0c66150"><tbody><tr style="overflow-wrap:break-word;"><td class="cl-d0c129a6"><p class="cl-d0c1080e"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.css" data-external="1"><span class="cl-d0b9bea0"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" data-external="1">
+<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>n</mi></mrow><annotation encoding="application/x-tex">n</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">n</span></span></span></span></span></p></td><td class="cl-d0c129b0"><p class="cl-d0c1080e"><span class="cl-d0b9bea0"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" data-external="1">
+<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>γ</mi><mi>n</mi></msub><mo stretchy="false">(</mo><msub><mi>z</mi><mn>1</mn></msub><mo separator="true">,</mo><mi mathvariant="normal">.</mi><mi mathvariant="normal">.</mi><mi mathvariant="normal">.</mi><mo separator="true">,</mo><msub><mi>z</mi><mi>n</mi></msub><mo separator="true">,</mo><mi>L</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">\gamma_n(z_1,...,z_n,L)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.05556em;">γ</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:-0.0556em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">n</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mopen">(</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.04398em;">z</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:-0.044em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord">...</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.04398em;">z</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:-0.044em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">n</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal">L</span><span class="mclose">)</span></span></span></span></span></p></td><td class="cl-d0c129b0"><p class="cl-d0c1080e"><span class="cl-d0b9bea0"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" data-external="1">
+<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>ρ</mi><mi>n</mi></msub><mo stretchy="false">(</mo><msub><mi>z</mi><mn>1</mn></msub><mo separator="true">,</mo><mi mathvariant="normal">.</mi><mi mathvariant="normal">.</mi><mi mathvariant="normal">.</mi><mo separator="true">,</mo><msub><mi>z</mi><mi>n</mi></msub><mo separator="true">,</mo><mi>L</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">\rho_n(z_1,...,z_n,L)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathnormal">ρ</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">n</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mopen">(</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.04398em;">z</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:-0.044em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord">...</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.04398em;">z</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:-0.044em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">n</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal">L</span><span class="mclose">)</span></span></span></span></span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-d0c129b1"><p class="cl-d0c1080e"><span class="cl-d0b9bea0"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" data-external="1">
+<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1</mn></mrow><annotation encoding="application/x-tex">1</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">1</span></span></span></span></span></p></td><td class="cl-d0c129ba"><p class="cl-d0c1080e"><span class="cl-d0b9bea0"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" data-external="1">
+<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>z</mi><mn>1</mn></msub></mrow><annotation encoding="application/x-tex">z_1</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.5806em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.04398em;">z</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:-0.044em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span></span></p></td><td class="cl-d0c129bb"><p class="cl-d0c1080e"><span class="cl-d0b9bea0"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" data-external="1">
+<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>2</mn><mi>sin</mi><mo>⁡</mo><mo stretchy="false">(</mo><mi>L</mi><mi mathvariant="normal">/</mi><mn>2</mn><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">2\sin(L/2)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">2</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mop">sin</span><span class="mopen">(</span><span class="mord mathnormal">L</span><span class="mord">/2</span><span class="mclose">)</span></span></span></span></span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-d0c129bc"><p class="cl-d0c1080e"><span class="cl-d0b9bea0"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" data-external="1">
+<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>2</mn></mrow><annotation encoding="application/x-tex">2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">2</span></span></span></span></span></p></td><td class="cl-d0c129bd"><p class="cl-d0c1080e"><span class="cl-d0b9bea0"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" data-external="1">
+<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>cos</mi><mo>⁡</mo><mo stretchy="false">(</mo><mi>L</mi><mi mathvariant="normal">/</mi><mn>2</mn><mo stretchy="false">)</mo><msubsup><mi>z</mi><mn>1</mn><mn>2</mn></msubsup><mtext> </mtext><mo>−</mo><mtext> </mtext><mn>2</mn><mi>sin</mi><mo>⁡</mo><mo stretchy="false">(</mo><mi>L</mi><mi mathvariant="normal">/</mi><mn>2</mn><mo stretchy="false">)</mo><msub><mi>z</mi><mn>2</mn></msub></mrow><annotation encoding="application/x-tex">\cos(L/2)z_1^2 ~-~ 2 \sin(L/2)z_2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.0641em;vertical-align:-0.25em;"></span><span class="mop">cos</span><span class="mopen">(</span><span class="mord mathnormal">L</span><span class="mord">/2</span><span class="mclose">)</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.04398em;">z</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-2.4519em;margin-left:-0.044em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2481em;"><span></span></span></span></span></span></span><span class="mspace nobreak"> </span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace nobreak"> </span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord">2</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mop">sin</span><span class="mopen">(</span><span class="mord mathnormal">L</span><span class="mord">/2</span><span class="mclose">)</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.04398em;">z</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:-0.044em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span></span></p></td><td class="cl-d0c129c4"><p class="cl-d0c1080e"><span class="cl-d0b9bea0"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" data-external="1">
+<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>4</mn><msup><mrow><mi>sin</mi><mo>⁡</mo></mrow><mn>2</mn></msup><mo stretchy="false">(</mo><mi>L</mi><mi mathvariant="normal">/</mi><mn>2</mn><mo stretchy="false">)</mo><mtext> </mtext><mo>−</mo><mtext> </mtext><mi mathvariant="normal">∣</mi><msub><mi>z</mi><mn>1</mn></msub><msup><mi mathvariant="normal">∣</mi><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">4\sin^2(L/2) ~-~ |z_1|^2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.1219em;vertical-align:-0.25em;"></span><span class="mord">4</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mop"><span class="mop">sin</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8719em;"><span style="top:-3.1208em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mopen">(</span><span class="mord mathnormal">L</span><span class="mord">/2</span><span class="mclose">)</span><span class="mspace nobreak"> </span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace nobreak"> </span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord">∣</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.04398em;">z</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:-0.044em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord"><span class="mord">∣</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span></span></span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-d0c129c5"><p class="cl-d0c1080e"><span class="cl-d0b9bea0"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" data-external="1">
+<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>3</mn></mrow><annotation encoding="application/x-tex">3</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">3</span></span></span></span></span></p></td><td class="cl-d0c129c6"><p class="cl-d0c1080e"><span class="cl-d0b9bea0"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" data-external="1">
+<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>12</mn><mo stretchy="false">(</mo><mn>4</mn><msup><mrow><mi>sin</mi><mo>⁡</mo></mrow><mn>2</mn></msup><mo stretchy="false">(</mo><mi>L</mi><mi mathvariant="normal">/</mi><mn>2</mn><mo stretchy="false">)</mo><mtext> </mtext><mo>−</mo><mtext> </mtext><mi mathvariant="normal">∣</mi><msub><mi>z</mi><mn>1</mn></msub><msup><mi mathvariant="normal">∣</mi><mn>2</mn></msup><mo stretchy="false">)</mo><msub><mi>z</mi><mn>3</mn></msub><mspace linebreak="newline"></mspace><mrow><mtext> </mtext><mo>+</mo><mtext> </mtext><mo stretchy="false">(</mo><mn>8</mn><msup><mrow><mi>cos</mi><mo>⁡</mo></mrow><mn>2</mn></msup><mo stretchy="false">(</mo><mi>L</mi><mi mathvariant="normal">/</mi><mn>2</mn><mo stretchy="false">)</mo><mo>−</mo><mi mathvariant="normal">∣</mi><msub><mi>z</mi><mn>1</mn></msub><msup><mi mathvariant="normal">∣</mi><mn>2</mn></msup><mo>+</mo><mn>4</mn><mo stretchy="false">)</mo><msubsup><mi>z</mi><mn>1</mn><mn>3</mn></msubsup></mrow><mspace linebreak="newline"></mspace><mtext> </mtext><mo>−</mo><mtext> </mtext><mn>48</mn><mi>sin</mi><mo>⁡</mo><mo stretchy="false">(</mo><mi>L</mi><mi mathvariant="normal">/</mi><mn>2</mn><mo stretchy="false">)</mo><mi>cos</mi><mo>⁡</mo><mo stretchy="false">(</mo><mi>L</mi><mi mathvariant="normal">/</mi><mn>2</mn><mo stretchy="false">)</mo><msub><mi>z</mi><mn>1</mn></msub><msub><mi>z</mi><mn>2</mn></msub><mtext> </mtext><mo>+</mo><mtext> </mtext><mn>12</mn><mover accent="true"><msub><mi>z</mi><mn>1</mn></msub><mo stretchy="true">‾</mo></mover><msubsup><mi>z</mi><mn>2</mn><mn>2</mn></msubsup></mrow><annotation encoding="application/x-tex">12 ( 4\sin^2(L/2) ~-~ |z_1|^2 ) z_3 \newline { ~+~ (8\cos^2(L/2) - |z_1|^2 + 4) z_1^3 } \newline ~-~ 48 \sin(L/2)\cos(L/2) z_1 z_2 ~+~ 12 \overline{z_1} z_2^2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.1219em;vertical-align:-0.25em;"></span><span class="mord">12</span><span class="mopen">(</span><span class="mord">4</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mop"><span class="mop">sin</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8719em;"><span style="top:-3.1208em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mopen">(</span><span class="mord mathnormal">L</span><span class="mord">/2</span><span class="mclose">)</span><span class="mspace nobreak"> </span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace nobreak"> </span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord">∣</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.04398em;">z</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:-0.044em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord"><span class="mord">∣</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mclose">)</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.04398em;">z</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:-0.044em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">3</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span><span class="mspace newline"></span><span class="base"><span class="strut" style="height:1.0641em;vertical-align:-0.25em;"></span><span class="mord"><span class="mspace nobreak"> </span><span class="mord">+</span><span class="mspace nobreak"> </span><span class="mopen">(</span><span class="mord">8</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mop"><span class="mop">cos</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mopen">(</span><span class="mord mathnormal">L</span><span class="mord">/2</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord">∣</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.04398em;">z</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:-0.044em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord"><span class="mord">∣</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord">4</span><span class="mclose">)</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.04398em;">z</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-2.4519em;margin-left:-0.044em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">3</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2481em;"><span></span></span></span></span></span></span></span></span><span class="mspace newline"></span><span class="base"><span class="strut" style="height:1.0641em;vertical-align:-0.25em;"></span><span class="mspace nobreak"> </span><span class="mord">−</span><span class="mspace nobreak"> </span><span class="mord">48</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mop">sin</span><span class="mopen">(</span><span class="mord mathnormal">L</span><span class="mord">/2</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mop">cos</span><span class="mopen">(</span><span class="mord mathnormal">L</span><span class="mord">/2</span><span class="mclose">)</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.04398em;">z</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:-0.044em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.04398em;">z</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:-0.044em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace nobreak"> </span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace nobreak"> </span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord">12</span><span class="mord overline"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.6306em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord"><span class="mord mathnormal" style="margin-right:0.04398em;">z</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:-0.044em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span><span style="top:-3.5506em;"><span class="pstrut" style="height:3em;"></span><span class="overline-line" style="border-bottom-width:0.04em;"></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.04398em;">z</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-2.4519em;margin-left:-0.044em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2481em;"><span></span></span></span></span></span></span></span></span></span></span></p></td><td class="cl-d0c129c7"><p class="cl-d0c1080e"><span class="cl-d0b9bea0"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" data-external="1">
+<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mn>6</mn><mi>sin</mi><mo>⁡</mo><mo stretchy="false">(</mo><mi>L</mi><mi mathvariant="normal">/</mi><mn>2</mn><mo stretchy="false">)</mo><mo stretchy="false">(</mo><mi mathvariant="normal">∣</mi><msub><mi>z</mi><mn>1</mn></msub><msup><mi mathvariant="normal">∣</mi><mn>4</mn></msup><mo>−</mo><mn>8</mn><mi mathvariant="normal">∣</mi><msub><mi>z</mi><mn>1</mn></msub><msup><mi mathvariant="normal">∣</mi><mn>2</mn></msup><mo>−</mo><mn>4</mn><mi mathvariant="normal">∣</mi><msub><mi>z</mi><mn>2</mn></msub><msup><mi mathvariant="normal">∣</mi><mn>2</mn></msup><mo stretchy="false">)</mo></mrow><mspace linebreak="newline"></mspace><mrow><mtext> </mtext><mo>+</mo><mtext> </mtext><mn>12</mn><mi>cos</mi><mo>⁡</mo><mo stretchy="false">(</mo><mi>L</mi><mi mathvariant="normal">/</mi><mn>2</mn><mo stretchy="false">)</mo><mo stretchy="false">(</mo><msup><mover accent="true"><msub><mi>z</mi><mn>1</mn></msub><mo stretchy="true">‾</mo></mover><mn>2</mn></msup><msub><mi>z</mi><mn>2</mn></msub><mo>+</mo><msubsup><mi>z</mi><mn>1</mn><mn>2</mn></msubsup><mover accent="true"><msub><mi>z</mi><mn>2</mn></msub><mo stretchy="true">‾</mo></mover><mo stretchy="false">)</mo></mrow><mspace linebreak="newline"></mspace><mtext> </mtext><mo>+</mo><mtext> </mtext><mn>96</mn><msup><mrow><mi>sin</mi><mo>⁡</mo></mrow><mn>3</mn></msup><mo stretchy="false">(</mo><mi>L</mi><mi mathvariant="normal">/</mi><mn>2</mn><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">{ 6\sin(L/2) (|z_1|^4 - 8|z_1|^2 - 4|z_2|^2 ) }  \newline { ~+~ 12\cos(L/2)(\overline{z_1}^2z_2 + z_1^2\overline{z_2}) }   \newline ~+~ 96\sin^3(L/2)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.0641em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord">6</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mop">sin</span><span class="mopen">(</span><span class="mord mathnormal">L</span><span class="mord">/2</span><span class="mclose">)</span><span class="mopen">(</span><span class="mord">∣</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.04398em;">z</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:-0.044em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord"><span class="mord">∣</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">4</span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord">8∣</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.04398em;">z</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:-0.044em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord"><span class="mord">∣</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord">4∣</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.04398em;">z</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:-0.044em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord"><span class="mord">∣</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mclose">)</span></span></span><span class="mspace newline"></span><span class="base"><span class="strut" style="height:1.0846em;vertical-align:-0.25em;"></span><span class="mord"><span class="mspace nobreak"> </span><span class="mord">+</span><span class="mspace nobreak"> </span><span class="mord">12</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mop">cos</span><span class="mopen">(</span><span class="mord mathnormal">L</span><span class="mord">/2</span><span class="mclose">)</span><span class="mopen">(</span><span class="mord"><span class="mord overline"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.6306em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord"><span class="mord mathnormal" style="margin-right:0.04398em;">z</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:-0.044em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span><span style="top:-3.5506em;"><span class="pstrut" style="height:3em;"></span><span class="overline-line" style="border-bottom-width:0.04em;"></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8346em;"><span style="top:-3.0835em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.04398em;">z</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:-0.044em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.04398em;">z</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-2.4519em;margin-left:-0.044em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2481em;"><span></span></span></span></span></span></span><span class="mord overline"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.6306em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord"><span class="mord mathnormal" style="margin-right:0.04398em;">z</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:-0.044em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span><span style="top:-3.5506em;"><span class="pstrut" style="height:3em;"></span><span class="overline-line" style="border-bottom-width:0.04em;"></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span><span class="mclose">)</span></span></span><span class="mspace newline"></span><span class="base"><span class="strut" style="height:1.1219em;vertical-align:-0.25em;"></span><span class="mspace nobreak"> </span><span class="mord">+</span><span class="mspace nobreak"> </span><span class="mord">96</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mop"><span class="mop">sin</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8719em;"><span style="top:-3.1208em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">3</span></span></span></span></span></span></span></span><span class="mopen">(</span><span class="mord mathnormal">L</span><span class="mord">/2</span><span class="mclose">)</span></span></span></span></span></p></td></tr></tbody></table></div>
+<p>The functions <span class="math inline">\(\rho_1()\)</span> and <span class="math inline">\(\rho_2()\)</span> are obviously real, and <span class="math inline">\(\rho_3()\)</span> is real because <span class="math inline">\(\overline{z_1}^2z_2 + z_1^2\overline{z_2}\)</span>
+is real.</p>
+<p>The case <span class="math inline">\(n{=}1\)</span> is in <span class="math inline">\(\mathbb{R}^3\)</span> and easy to visualize: <span class="math display">\[\begin{equation}
+(z_1,L) \in  \partial Z_1 ~~~ \text{ iff } ~~~ |z_1| = 2\sin(L/2)
+\end{equation}\]</span> This is a surface of revolution - a sine wave
+around the L axis. It is like a football with poles at (0,0) and
+(0,<span class="math inline">\(2\pi\)</span>). Note that these 2 poles
+are exactly the points where the right side of the equality
+vanishes.</p>
+<p>If we define <span class="math inline">\(f(z_1,...,z_n,L) := |
+\gamma_n(z_1,...,z_n,L) | - \rho_n(z_1,...,z_n,L)\)</span> then <span class="math inline">\(f()\)</span> vanishes on <span class="math inline">\(\partial Z_n\)</span>, is negative in the interior
+of <span class="math inline">\(Z_n\)</span>, and is positive outside
+<span class="math inline">\(Z_n\)</span>. This <em>level-set
+function</em> <span class="math inline">\(f()\)</span> is used in
+<code>boundaryfromsphere()</code> to compute the intersection of a ray
+based at <span class="math inline">\((0,\pi)\)</span> and <span class="math inline">\(\partial Z_n\)</span>. The gradient of <span class="math inline">\(f()\)</span> is used in
+<code>arcsfromboundary()</code>; see the next section.</p>
+<p><br><br></p>
+</div>
+<div id="supporting-hyperplanes-of-partial-z_n" class="section level1">
+<h1>Supporting Hyperplanes of <span class="math inline">\(\partial
+Z_n\)</span></h1>
+<p>For <span class="math inline">\(x = (z_1,...,z_n,L) \in \partial
+Z_n\)</span> evaluating the function <span class="math inline">\(\partial Z_n \to A_n\)</span> requires the outward
+normal of a supporting hyperplane to <span class="math inline">\(\partial Z_n\)</span> at <span class="math inline">\(x\)</span>. The coordinates of this normal become
+the coefficients of a trigonometric polynomial, whose roots are the
+endpoints of arcs. If <span class="math inline">\(\partial Z_n\)</span>
+is smooth at <span class="math inline">\(x\)</span> the supporting
+hyperplane is unique, and is in fact the gradient of the level-set
+function <span class="math inline">\(f()\)</span> at <span class="math inline">\(x\)</span>. Also in this case the trigonometric
+polynomial has the full set of <span class="math inline">\(2n\)</span>
+roots, defining <span class="math inline">\(n\)</span> arcs.</p>
+<p>But unfortunately, <span class="math inline">\(\partial Z_n\)</span>
+is <em>NOT</em> smooth at all <span class="math inline">\(x\)</span>. We
+saw this already with <span class="math inline">\(n{=}1\)</span>, where
+the surface is not smooth at the 2 poles. At the poles, there are
+infinitely many supporting planes, the trigonometric polynomial has 0
+roots, the “south pole” maps to the empty arc, and the “north pole” to
+the full circle.</p>
+<p>The function <span class="math inline">\(\partial Z_n \to
+A_n\)</span> is implemented in <code>arcsfromboundary()</code>. This
+<strong>R</strong> function has to deal with the non-smooth case. It
+turns out that <span class="math inline">\(\partial Z_n\)</span> is
+smooth at <span class="math inline">\(x\)</span> iff <span class="math inline">\(\rho_n(x) &gt; 0\)</span>. We saw this already
+with <span class="math inline">\(n{=}1\)</span>. So starting at <span class="math inline">\(k{=}1\)</span> and incrementing up to <span class="math inline">\(n\)</span>, it tests <span class="math inline">\(\rho_k(z_1,...,z_k,L)\)</span>. If <span class="math inline">\(\rho_k(z_1,...,z_k,L) &lt; \epsilon\)</span>, it
+returns a collection of <span class="math inline">\(k{-}1\)</span> arcs
+in <span class="math inline">\(A_n\)</span>. Otherwise the surface is
+smooth at <span class="math inline">\(x\)</span> and it returns <span class="math inline">\(n\)</span> arcs. Recall that <span class="math inline">\(A_n\)</span> is the space of <span class="math inline">\(n\)</span> <em>or fewer</em> arcs.
+<code>arcsfromboundary()</code> first calculates the outward pointing
+normal at p. The the gradient of the level-set function <span class="math inline">\(f()\)</span> is used to compute this normal; the
+expressions for the gradient are more complicated than the ones in the
+above table, and are omitted here. This coordinates of this normal are
+the coefficients of a trigonometric polynomial whose roots are
+calculated with <code>trigpolyroot()</code>. These roots are the
+endpoints of the arcs.</p>
+<p><strong>NOTE:</strong> The differences <span class="math inline">\(X_i := \partial Z_i - \partial Z_{i-1}\)</span>
+almost surely form a <em>Thom-Mather stratification</em> of <span class="math inline">\(\partial Z_n \subset \mathbb{R}^{2n+1}\)</span>,
+but I have not checked this. The conditions for such a stratification
+are complex, and are in <span class="citation">[3]</span>. Each <span class="math inline">\(X_i\)</span> is the image of <em>exactly</em>
+<span class="math inline">\(i\)</span> arcs. I think that the above
+functions <span class="math inline">\(\rho_i()\)</span>, after
+restriction to <span class="math inline">\(X_i\)</span>, can serve as
+the <em>distance functions</em> in the stratification.</p>
+<p><br><br></p>
+</div>
+<div id="summary" class="section level1">
+<h1>Summary</h1>
+<p>The forward functions: <span class="math display">\[\begin{equation}
+A_n  ~~ \longrightarrow  ~~ \partial Z_n ~~ \longrightarrow ~~
+\mathbb{S}^{2n}
+\end{equation}\]</span> are straightforward. In the package, they are
+implemented as <code>boundaryfromarcs()</code> and
+<code>spherefromboundary()</code> respectively.</p>
+<p>But the inverse functions: <span class="math display">\[\begin{equation}
+A_n  ~~ \longleftarrow  ~~ \partial Z_n ~~ \longleftarrow ~~
+\mathbb{S}^{2n}
+\end{equation}\]</span> use convergent numerical iteration. The first
+one, <code>boundaryfromsphere()</code>, uses the implicit function
+defined above, and this version of the package requires that <span class="math inline">\(n\)</span> = 1, 2, or 3. The second one,
+<code>arcsfromsphere()</code>, solves for the roots of a trigonometric
+polynomial and uses <code>base::polyroot()</code>.</p>
+<p><br><br></p>
+</div>
+<div id="references" class="section level1">
+<h1>References</h1>
+<div id="refs" class="references csl-bib-body">
+<div id="ref-cox2008" class="csl-entry">
+<div class="csl-left-margin">[1] </div><div class="csl-right-inline">COX, D. A., LITTLE, J. and O’SHEA, D.
+<em>Ideals, varieties, and algorithms: An introduction to computational
+algebraic geometry and commutative algebra</em>. B.m.: Springer New
+York, 2008. Undergraduate texts in mathematics. ISBN 9780387356501.
+</div>
+</div>
+<div id="ref-M2" class="csl-entry">
+<div class="csl-left-margin">[2] </div><div class="csl-right-inline">GRAYSON, Daniel R. and STILLMAN, Michael E.
+<em>Macaulay2, a software system for research in algebraic
+geometry</em>. B.m.: Available at <a href="https://macaulay2.com" class="uri">https://macaulay2.com</a></div>
+</div>
+<div id="ref-ThomMather" class="csl-entry">
+<div class="csl-left-margin">[3] </div><div class="csl-right-inline">WIKIPEDIA CONTRIBUTORS. <em>Thom–mather
+stratified space — <span>Wikipedia</span><span>,</span> the free
+encyclopedia</em> [online]. 2025. Available at: <a href="https://en.wikipedia.org/w/index.php?title=Thom%E2%80%93Mather_stratified_space&amp;oldid=1272561764">https://en.wikipedia.org/w/index.php?title=Thom%E2%80%93Mather_stratified_space&amp;oldid=1272561764</a>.
+[Online; accessed 5-June-2025]</div>
+</div>
+</div>
+<p><br><br></p>
+</div>
+<div id="session-information" class="section level1">
+<h1>Session Information</h1>
+This document was prepared Tue Jun 10, 2025 with the following
+configuration:
+<pre>
+R version 4.5.0 (2025-04-11 ucrt)
+Platform: x86_64-w64-mingw32/x64
+Running under: Windows 11 x64 (build 26100)
+
+Matrix products: default
+  LAPACK version 3.12.1
+
+locale:
+[1] LC_COLLATE=C                          
+[2] LC_CTYPE=English_United States.utf8   
+[3] LC_MONETARY=English_United States.utf8
+[4] LC_NUMERIC=C                          
+[5] LC_TIME=English_United States.utf8    
+
+time zone: America/Los_Angeles
+tzcode source: internal
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+[1] flextable_0.9.7   polarzonoid_0.1-2
+
+loaded via a namespace (and not attached):
+ [1] zip_2.3.3               cli_3.6.5               knitr_1.50             
+ [4] rlang_1.1.6             xfun_0.52               textshaping_1.0.1      
+ [7] gdtools_0.4.2           jsonlite_2.0.0          data.table_1.17.2      
+[10] glue_1.8.0              xslt_1.5.1              openssl_2.3.2          
+[13] askpass_1.2.1           V8_6.0.3                htmltools_0.5.8.1      
+[16] ragg_1.4.0              sass_0.4.10             fontquiver_0.2.1       
+[19] rmarkdown_2.29          grid_4.5.0              evaluate_1.0.3         
+[22] jquerylib_0.1.4         fastmap_1.2.0           yaml_2.3.10            
+[25] lifecycle_1.0.4         compiler_4.5.0          officer_0.6.8          
+[28] fontLiberation_0.1.0    Rcpp_1.0.14             katex_1.5.0            
+[31] systemfonts_1.2.3       digest_0.6.37           R6_2.6.1               
+[34] curl_6.2.2              bslib_0.9.0             logger_0.4.0           
+[37] uuid_1.2-1              fontBitstreamVera_0.1.1 tools_4.5.0            
+[40] equatags_0.2.1          xml2_1.3.8              cachem_1.1.0           
+</pre>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

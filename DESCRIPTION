@@ -1,0 +1,22 @@
+Package: polarzonoid
+Version: 0.1-2
+Date: 2025-06-10
+Title: Compute Maps and Properties of Polar Zonoids
+Authors@R: person("Glenn", "Davis", role=c("aut", "cre"), email="gdavis@gluonics.com")
+Depends: R (>= 4.0.0)
+Imports: logger
+Suggests: knitr, rmarkdown, gifski, flextable, equatags, rgl,
+        zonohedra, microbenchmark, magick, pdftools
+Description: In each odd dimension is a convex body - the polar zonoid - whose generating functions are trigonometric polynomials.  The polar zonoid is a straightforward generalization of the polar zonohedron in dimension 3. The package has some applications of the polar zonoid, including the properties of configuration spaces of arcs on the circle and 3x3 rotation matrices.  There is also a root solver for trigonometric polynomials.
+License: GPL (>= 2)
+LazyLoad: no
+NeedsCompilation: no
+Biarch: no
+Author: Glenn Davis [aut, cre]
+Maintainer: Glenn Davis <gdavis@gluonics.com>
+Repository: CRAN
+VignetteBuilder: knitr
+BuildVignettes: yes
+ByteCompile: no
+Packaged: 2025-06-10 22:11:35 UTC; Glenn
+Date/Publication: 2025-06-13 04:50:07 UTC
