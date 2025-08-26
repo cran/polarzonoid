@@ -80,7 +80,7 @@ also a collection of arcs, and $d(V,W)$ is the total length of the arcs in this
 symmetric difference.
 The corresponding functions in the package are `arcsdistance()` and `arcssymmdiff()`.
 
-In the [**User Guide**](../doc/polarzonoid-guide.html) vignette
+In the [**User Guide**](../vignettes/polarzonoid-guide.html) vignette
 it is shown that there are homeomorphisms
 \begin{equation}
 A_n  ~~ \longleftrightarrow  ~~  \partial Z_n ~~ \longleftrightarrow ~~ \mathbb{S}^{2n}

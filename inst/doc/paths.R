@@ -7,9 +7,9 @@ library(polarzonoid)
 
 ## ----echo=TRUE, message=FALSE-----------------------------------------------------------------------------------------------------------------
 
-GIFfromarclist <- function( arclist, arcmat, index=1L, fps=5, vpsize=c(480,512) )
+WebMfromarclist <- function( arclist, arcmat, index, framerate=2, vpsize=c(480,480) )
     {
-    require( 'gifski' )
+    requireNamespace( 'av', quietly=TRUE )
 
     # make temp folder
     pathtemp = tempdir()   # "./figs"     ;   if( ! file.exists(pathtemp) ) dir.create(pathtemp)
@@ -27,15 +27,32 @@ GIFfromarclist <- function( arclist, arcmat, index=1L, fps=5, vpsize=c(480,512) 
         }
 
     pathvec = dir( pathtemp, pattern="png$", full=T )
-    gif_file = sprintf( "%s/animation%g.gif", pathtemp, index )
-    out = gifski( pathvec, gif_file=gif_file, delay=1/fps, progress=F, width=vpsize[1], height=vpsize[2] )
-    res = file.remove( pathvec )  # cleanup the .PNG files, leaving just the .GIF
+    webm_file = sprintf( "%s/animation%g.webm", pathtemp, index )
+    out = av::av_encode_video( pathvec, output=webm_file, framerate=framerate, codec='libvpx-vp9', verbose=F )
+    res = file.remove( pathvec )  # cleanup the .PNG files, leaving just the .webm
 
     return(out)
     }
 
 ## ----echo=TRUE, message=FALSE-----------------------------------------------------------------------------------------------------------------
-circleofarcs <- function( arcmat, rad=0.1, count=180 )
+
+video2html  <- function( path, attributes="controls loop autoplay muted" )
+    {
+    requireNamespace( "base64enc", quietly=TRUE )
+    
+    i   = regexpr( "[.][a-z]+$", path, ignore.case=T )
+    if( i < 0 ) return('')
+    ext = substring( path, i+1 )    # extract the extension, and skip over the '.'
+    
+    part1   = sprintf( '<video %s src="data:video/%s;base64,\n', attributes, ext )
+    part2   = base64enc::base64encode( path, linewidth=120, newline='\n' )
+    part3   = '"></video>'
+    
+    return( paste0( part1, part2, part3, collapse='' ) )
+    }
+
+## ----echo=TRUE, message=FALSE-----------------------------------------------------------------------------------------------------------------
+circle_of_arcs <- function( arcmat, rad=0.1, count=180 )
     {
     res = spherefromarcs_plus( arcmat, n=nrow(arcmat)+1L )
     
@@ -57,21 +74,25 @@ circleofarcs <- function( arcmat, rad=0.1, count=180 )
 
 ## ----echo=TRUE, message=FALSE, warning=TRUE, fig.cap='caption', fig.keep='last', fig.show='hide', cache=FALSE---------------------------------
 # arcmat1 is a single semicircle centered at (1,0)
-arcmat1 = matrix( c(0,pi), nrow=1, ncol=2 )
-circle  = circleofarcs( arcmat1, count=90 )
-gif_file = GIFfromarclist( circle, arcmat1, index=1, vpsize=c(480,480) )
+arcmat1    = matrix( c(0,pi), nrow=1, ncol=2 )
+circle     = circle_of_arcs( arcmat1, count=90 )
+webm_file  = WebMfromarclist( circle, arcmat1, index=1, vpsize=c(480,480) )
+video_html = video2html(webm_file)
 
 ## ----echo=FALSE, message=TRUE, warning=TRUE---------------------------------------------------------------------------------------------------
-unlink( dirname(gif_file) )
+knitr::raw_html( video_html, meta=NULL, cacheable=FALSE )
+unlink( dirname(webm_file) )
 
 ## ----echo=TRUE, message=FALSE, warning=TRUE, fig.cap='caption', fig.keep='last', fig.show='hide', cache=FALSE---------------------------------
 # arcmat2 is: an arc filling quadrant #1, plus an arc filling quadrant #3
-arcmat2 = matrix( c((1/4)*pi,pi/2, (5/4)*pi,pi/2), nrow=2, ncol=2, byrow=TRUE )
-circle  = circleofarcs( arcmat2, count=90 )
-gif_file = GIFfromarclist( circle, arcmat2, index=2, vpsize=c(480,480) )
+arcmat2    = matrix( c((1/4)*pi,pi/2, (5/4)*pi,pi/2), nrow=2, ncol=2, byrow=TRUE )
+circle     = circle_of_arcs( arcmat2, count=90 )
+webm_file  = WebMfromarclist( circle, arcmat2, index=2, vpsize=c(480,480) )
+video_html = video2html(webm_file)
 
 ## ----echo=FALSE, message=TRUE, warning=TRUE---------------------------------------------------------------------------------------------------
-unlink( dirname(gif_file) )
+knitr::raw_html( video_html, meta=NULL, cacheable=FALSE )
+unlink( dirname(webm_file) )
 
 ## ----echo=TRUE, message=FALSE-----------------------------------------------------------------------------------------------------------------
 poletopole <- function( arcmat, thetamax=pi/36, n=NULL )
@@ -100,21 +121,25 @@ poletopole <- function( arcmat, thetamax=pi/36, n=NULL )
 
 ## ----echo=TRUE, message=FALSE, warning=TRUE, fig.cap='caption', fig.keep='last', fig.show='hide', cache=FALSE---------------------------------
 # arcmat3 is 3 arcs of different lengths
-arcmat3 = matrix( c(0.375,0.75,  2.3,1.1,  4.6,2.8), ncol=2, byrow=TRUE )
-arclist  = poletopole( arcmat3 )
-gif_file = GIFfromarclist( arclist, arcmat3, index=3, fps=2, vpsize=c(480,480) )
+arcmat3    = matrix( c(0.375,0.75,  2.3,1.1,  4.6,2.8), ncol=2, byrow=TRUE )
+arclist    = poletopole( arcmat3 )
+webm_file  = WebMfromarclist( arclist, arcmat3, index=3, vpsize=c(480,480) )
+video_html = video2html(webm_file)
 
 ## ----echo=FALSE, message=TRUE, warning=TRUE---------------------------------------------------------------------------------------------------
-unlink( dirname(gif_file) )
+knitr::raw_html( video_html, meta=NULL, cacheable=FALSE )
+unlink( dirname(webm_file) )
 
 ## ----echo=TRUE, message=TRUE, warning=TRUE, fig.cap='caption', fig.keep='last', fig.show='hide', cache=FALSE----------------------------------
 # arcmat1 is a single arc, but it splits into 3 arcs on either side of the path from pole to pole
-arcmat1 = matrix( c(1.5,2.9), ncol=2, byrow=TRUE )
-arclist  = poletopole( arcmat1, n=3 )
-gif_file = GIFfromarclist( arclist, arcmat1, index=4, fps=2, vpsize=c(480,480) )
+arcmat1    = matrix( c(1.5,2.9), ncol=2, byrow=TRUE )
+arclist    = poletopole( arcmat1, n=3 )
+webm_file  = WebMfromarclist( arclist, arcmat1, index=4, vpsize=c(480,480) )
+video_html = video2html(webm_file)
 
 ## ----echo=FALSE, message=TRUE, warning=TRUE---------------------------------------------------------------------------------------------------
-unlink( dirname(gif_file) )
+knitr::raw_html( video_html, meta=NULL, cacheable=FALSE )
+unlink( dirname(webm_file) )
 
 ## ----echo=FALSE, results='asis'-----------------------------------------------
 options(old_opt)

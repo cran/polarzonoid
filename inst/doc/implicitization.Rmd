@@ -46,7 +46,7 @@ old_opt = options( width=144 )
 library(polarzonoid)
 ```
 
-In the [User Guide](../doc/polarzonoid-guide.html) vignette
+In the [User Guide](../vignettes/polarzonoid-guide.html) vignette
 it is shown that there is are homeomorphisms
 \begin{equation}
 A_n  ~~ \longleftrightarrow  ~~ \partial Z_n ~~ \longleftrightarrow ~~ \mathbb{S}^{2n}

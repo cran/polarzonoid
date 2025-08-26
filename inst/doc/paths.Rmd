@@ -28,6 +28,22 @@ h1{
 }
 ```
 
+<script>
+function ToggleDiv(ID) {
+  var D = document.getElementById("D-" + ID);
+  var B = document.getElementById("B-" + ID);
+  if (D.style.display === "none") {
+    // open the div and change button text
+    D.style.display = "block";
+    B.innerText = "Hide " + ID;
+  } else {
+    // close the div and change button text
+    D.style.display = "none";
+    B.innerText = "Show " + ID;
+  }
+}
+</script>
+
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -41,7 +57,7 @@ old_opt = options( width=144 )
 ```{r, echo=TRUE, message=FALSE}
 library(polarzonoid)
 ```
-In the [User Guide](../doc/polarzonoid-guide.html) vignette
+In the [User Guide](../vignettes/polarzonoid-guide.html) vignette
 it is shown that there is are homeomorphisms
 \begin{equation}
 A_n  ~~ \longleftrightarrow  ~~ \partial Z_n ~~ \longleftrightarrow ~~ \mathbb{S}^{2n}
@@ -51,14 +67,17 @@ and $Z_n$ is the polar zonoid in $\mathbb{R}^{2n+1}$.
 
 In this vignette, we take some easily-defined paths in the sphere $\mathbb{S}^{2n}$,
 compute the corresponding paths in the space of arcs $A_n$,
-and display those paths as animated GIF plots.
-We make these plots with help of the package **gifski** and this function:
+and display those paths as animated WebM video plots.
+We make these plots with help of the package **av** and this function:
 
+<button id="B-WebMfromarclist()" onclick="ToggleDiv('WebMfromarclist()')">
+Show WebMfromarclist()</button>
+<div id="D-WebMfromarclist()" style="display: none">
 ```{r, echo=TRUE, message=FALSE}
 
-GIFfromarclist <- function( arclist, arcmat, index=1L, fps=5, vpsize=c(480,512) )
+WebMfromarclist <- function( arclist, arcmat, index, framerate=2, vpsize=c(480,480) )
     {
-    require( 'gifski' )
+    requireNamespace( 'av', quietly=TRUE )
 
     # make temp folder
     pathtemp = tempdir()   # "./figs"     ;   if( ! file.exists(pathtemp) ) dir.create(pathtemp)
@@ -76,13 +95,40 @@ GIFfromarclist <- function( arclist, arcmat, index=1L, fps=5, vpsize=c(480,512) 
         }
 
     pathvec = dir( pathtemp, pattern="png$", full=T )
-    gif_file = sprintf( "%s/animation%g.gif", pathtemp, index )
-    out = gifski( pathvec, gif_file=gif_file, delay=1/fps, progress=F, width=vpsize[1], height=vpsize[2] )
-    res = file.remove( pathvec )  # cleanup the .PNG files, leaving just the .GIF
+    webm_file = sprintf( "%s/animation%g.webm", pathtemp, index )
+    out = av::av_encode_video( pathvec, output=webm_file, framerate=framerate, codec='libvpx-vp9', verbose=F )
+    res = file.remove( pathvec )  # cleanup the .PNG files, leaving just the .webm
 
     return(out)
     }
 ```
+</div>
+
+<br>
+
+Embedding videos in the HTML output is done with the help of the package **base64enc** and this function:
+
+<button id="B-video2html()" onclick="ToggleDiv('video2html()')">Show video2html()</button>
+<div id="D-video2html()" style="display: none">
+```{r, echo=TRUE, message=FALSE}
+
+video2html  <- function( path, attributes="controls loop autoplay muted" )
+    {
+    requireNamespace( "base64enc", quietly=TRUE )
+    
+    i   = regexpr( "[.][a-z]+$", path, ignore.case=T )
+    if( i < 0 ) return('')
+    ext = substring( path, i+1 )    # extract the extension, and skip over the '.'
+    
+    part1   = sprintf( '<video %s src="data:video/%s;base64,\n', attributes, ext )
+    part2   = base64enc::base64encode( path, linewidth=120, newline='\n' )
+    part3   = '"></video>'
+    
+    return( paste0( part1, part2, part3, collapse='' ) )
+    }
+```
+</div>
+
 
 
 
@@ -104,10 +150,12 @@ using the homeomorphism
 $A_{n+1} ~ \rightleftarrows ~  \mathbb{S}^{2n+2}$,
 computing the circle in $\mathbb{S}^{2n+2}$,
 and then mapping back to $A_{n+1}$ using the inverse homeomorphism.
-The function we will use is:
+This is the function we will use:
 
+<button id="B-circle_of_arcs()" onclick="ToggleDiv('circle_of_arcs()')">Show circle_of_arcs()</button>
+<div id="D-circle_of_arcs()" style="display: none">
 ```{r, echo=TRUE, message=FALSE}
-circleofarcs <- function( arcmat, rad=0.1, count=180 )
+circle_of_arcs <- function( arcmat, rad=0.1, count=180 )
     {
     res = spherefromarcs_plus( arcmat, n=nrow(arcmat)+1L )
     
@@ -127,6 +175,7 @@ circleofarcs <- function( arcmat, rad=0.1, count=180 )
     return( out )
     }
 ```
+</div>
 The case of $n{=}0$ is easy to visualize.
 The space $A_0$ is 2 points, which map to the "poles" of the sphere $\mathbb{S}^2$.
 The empty arc maps to the "south" and the full circle maps to the "north"
@@ -147,18 +196,19 @@ and plot the 2 arcs in $A_2$ that circle around $a$.
 
 ```{r, echo=TRUE, message=FALSE, warning=TRUE, fig.cap='caption', fig.keep='last', fig.show='hide', cache=FALSE }
 # arcmat1 is a single semicircle centered at (1,0)
-arcmat1 = matrix( c(0,pi), nrow=1, ncol=2 )
-circle  = circleofarcs( arcmat1, count=90 )
-gif_file = GIFfromarclist( circle, arcmat1, index=1, vpsize=c(480,480) )
+arcmat1    = matrix( c(0,pi), nrow=1, ncol=2 )
+circle     = circle_of_arcs( arcmat1, count=90 )
+webm_file  = WebMfromarclist( circle, arcmat1, index=1, vpsize=c(480,480) )
+video_html = video2html(webm_file)
 ```
 
 <div style="text-align: center">
-![circle of arcs around a single arc](`r gif_file`){width=80%}
-</div>
-
 ```{r, echo=FALSE, message=TRUE, warning=TRUE }
-unlink( dirname(gif_file) )
+knitr::raw_html( video_html, meta=NULL, cacheable=FALSE )
+unlink( dirname(webm_file) )
 ```
+circle of arcs around a single arc
+</div>
 
 The original arc is drawn in blue,
 and shrunken a little so it does not overlap with the nearby pair
@@ -177,19 +227,19 @@ and we plot the 3 arcs in $A_3$ that circle around $a$.
 
 ```{r, echo=TRUE, message=FALSE, warning=TRUE, fig.cap='caption', fig.keep='last', fig.show='hide', cache=FALSE }
 # arcmat2 is: an arc filling quadrant #1, plus an arc filling quadrant #3
-arcmat2 = matrix( c((1/4)*pi,pi/2, (5/4)*pi,pi/2), nrow=2, ncol=2, byrow=TRUE )
-circle  = circleofarcs( arcmat2, count=90 )
-gif_file = GIFfromarclist( circle, arcmat2, index=2, vpsize=c(480,480) )
+arcmat2    = matrix( c((1/4)*pi,pi/2, (5/4)*pi,pi/2), nrow=2, ncol=2, byrow=TRUE )
+circle     = circle_of_arcs( arcmat2, count=90 )
+webm_file  = WebMfromarclist( circle, arcmat2, index=2, vpsize=c(480,480) )
+video_html = video2html(webm_file)
 ```
 
 <div style="text-align: center">
-![circle of 3 arcs around a pair of arcs](`r gif_file`){width=80%}
-</div>
-
 ```{r, echo=FALSE, message=TRUE, warning=TRUE }
-unlink( dirname(gif_file) )
+knitr::raw_html( video_html, meta=NULL, cacheable=FALSE )
+unlink( dirname(webm_file) )
 ```
-
+circle of 3 arcs around a pair of arcs
+</div>
 The original pair of arcs are drawn in blue,
 and shrunken a little so they does not overlap with the nearby triple of arcs.
 
@@ -204,6 +254,8 @@ and then down the other side.
 The full path is a great circle, and is pieced together using the function `slerp()`
 (spherical linear interpolation) from @Shoemake1985.
 
+<button id="B-poletopole()" onclick="ToggleDiv('poletopole()')">Show poletopole()</button>
+<div id="D-poletopole()" style="display: none">
 ```{r, echo=TRUE, message=FALSE}
 poletopole <- function( arcmat, thetamax=pi/36, n=NULL )
     {
@@ -229,21 +281,23 @@ poletopole <- function( arcmat, thetamax=pi/36, n=NULL )
     return( out )    
     }
 ```
-
+</div>
 
 ```{r, echo=TRUE, message=FALSE, warning=TRUE, fig.cap='caption', fig.keep='last', fig.show='hide', cache=FALSE }
 # arcmat3 is 3 arcs of different lengths
-arcmat3 = matrix( c(0.375,0.75,  2.3,1.1,  4.6,2.8), ncol=2, byrow=TRUE )
-arclist  = poletopole( arcmat3 )
-gif_file = GIFfromarclist( arclist, arcmat3, index=3, fps=2, vpsize=c(480,480) )
+arcmat3    = matrix( c(0.375,0.75,  2.3,1.1,  4.6,2.8), ncol=2, byrow=TRUE )
+arclist    = poletopole( arcmat3 )
+webm_file  = WebMfromarclist( arclist, arcmat3, index=3, vpsize=c(480,480) )
+video_html = video2html(webm_file)
 ```
 
 <div style="text-align: center">
-![empty to full circle, and back to empty on the other side](`r gif_file`){width=80%}
-</div>
 ```{r, echo=FALSE, message=TRUE, warning=TRUE }
-unlink( dirname(gif_file) )
+knitr::raw_html( video_html, meta=NULL, cacheable=FALSE )
+unlink( dirname(webm_file) )
 ```
+empty to full circle, and back to empty on the other side
+</div>
 
 The defining arcs are drawn in blue,
 and shrunken a little so they do not overlap with the arcs along the path.
@@ -254,20 +308,22 @@ But it is easy to make an example where the number of arcs
 is **not** a constant.
 ```{r, echo=TRUE, message=TRUE, warning=TRUE, fig.cap='caption', fig.keep='last', fig.show='hide', cache=FALSE }
 # arcmat1 is a single arc, but it splits into 3 arcs on either side of the path from pole to pole
-arcmat1 = matrix( c(1.5,2.9), ncol=2, byrow=TRUE )
-arclist  = poletopole( arcmat1, n=3 )
-gif_file = GIFfromarclist( arclist, arcmat1, index=4, fps=2, vpsize=c(480,480) )
+arcmat1    = matrix( c(1.5,2.9), ncol=2, byrow=TRUE )
+arclist    = poletopole( arcmat1, n=3 )
+webm_file  = WebMfromarclist( arclist, arcmat1, index=4, vpsize=c(480,480) )
+video_html = video2html(webm_file)
 ```
-
 <div style="text-align: center">
-![empty to full circle, and back to empty on the other side](`r gif_file`){width=80%}
-</div>
 ```{r, echo=FALSE, message=TRUE, warning=TRUE }
-unlink( dirname(gif_file) )
+knitr::raw_html( video_html, meta=NULL, cacheable=FALSE )
+unlink( dirname(webm_file) )
 ```
-
+empty to full circle, and back to empty on the other side
+</div>
 The defining arc is drawn in blue,
 and shrunken a little so it does not overlap with the arcs along the path.
+
+
 
 <br><br>
 

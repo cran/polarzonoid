@@ -34,6 +34,23 @@ h1{
 }
 ```
 
+<script>
+function ToggleDiv(ID) {
+  var D = document.getElementById("D-" + ID);
+  var B = document.getElementById("B-" + ID);
+  if (D.style.display === "none") {
+    // open the div and change button text
+    D.style.display = "block";
+    B.innerText = "Hide " + ID;
+  } else {
+    // close the div and change button text
+    D.style.display = "none";
+    B.innerText = "Show " + ID;
+  }
+}
+</script>
+
+
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -55,18 +72,20 @@ Since $\RP^3$ is homeomorphic to the group of 3x3 rotation matrices $\SOthree$,
 we also have a homeomorphism with that space.
 
 A prerequisite to understanding this vignette is the section on spaces of arcs
-$A_n$ in the  [User Guide](../doc/polarzonoid-guide.html) vignette.
+$A_n$ in the  [User Guide](../vignettes/polarzonoid-guide.html) vignette.
 
-The current vignette is illustrated with some animated GIFS showing paths
+The current vignette is illustrated with some WebM video plots showing paths
 in the space of 2 or 4 points on the circle.
-The GIF plots are made with help of the package **gifski** and this function:
+The videos are made with help of the package **av** and this function:
 
-
+<button id="B-WebMfromrotationlist()" onclick="ToggleDiv('WebMfromrotationlist()')">
+Show WebMfromrotationlist()</button>
+<div id="D-WebMfromrotationlist()" style="display: none">
 ```{r, echo=TRUE, message=FALSE}
 
-GIFfromrotationlist <- function( rotationlist, index=1L, fps=4, vpsize=c(480,512) )
+WebMfromrotationlist <- function( rotationlist, index=1L, framerate=10, vpsize=c(480,480) )
     {
-    require( 'gifski' )
+    requireNamespace( 'av', quietly=TRUE )
 
     # make temp folder
     pathtemp = tempdir()   #  "./figs" ;   if( ! file.exists(pathtemp) ) dir.create(pathtemp)
@@ -96,13 +115,39 @@ GIFfromrotationlist <- function( rotationlist, index=1L, fps=4, vpsize=c(480,512
         }
 
     pathvec = dir( pathtemp, pattern="png$", full=T )
-    gif_file = sprintf( "%s/animation%g.gif", pathtemp, index )
-    out = gifski( pathvec, gif_file=gif_file, delay=1/fps, progress=F, width=vpsize[1], height=vpsize[2] )
-    res = file.remove( pathvec )  # cleanup the .PNG files, leaving just the .GIF
+    webm_file = sprintf( "%s/animation%g.webm", pathtemp, index )
+    out = av::av_encode_video( pathvec, output=webm_file, framerate=framerate, codec='libvpx-vp9', verbose=F )
+    res = file.remove( pathvec )  # cleanup the .PNG files, leaving just the .webm
 
     return(out)
     }
 ```
+</div>
+
+<br>
+
+Embedding videos in the HTML output is done with the help of the package **base64enc** and this function:
+
+<button id="B-video2html()" onclick="ToggleDiv('video2html()')">Show video2html()</button>
+<div id="D-video2html()" style="display: none">
+```{r, echo=TRUE, message=FALSE}
+
+video2html  <- function( path, attributes="controls loop autoplay muted" )
+    {
+    requireNamespace( "base64enc", quietly=TRUE )
+    
+    i   = regexpr( "[.][a-z]+$", path, ignore.case=T )
+    if( i < 0 ) return('')
+    ext = substring( path, i+1 )    # extract the extension, and skip over the '.'
+    
+    part1   = sprintf( '<video %s src="data:video/%s;base64,\n', attributes, ext )
+    part2   = base64enc::base64encode( path, linewidth=120, newline='\n' )
+    part3   = '"></video>'
+    
+    return( paste0( part1, part2, part3, collapse='' ) )
+    }
+```
+</div>
 
 
 <br><br>
@@ -217,9 +262,13 @@ from unit quaternions to 3x3 rotation matrices.
 In the following animations we generate a loop of rotations around a fixed axis,
 map the 3x3 rotation matrices to balanced configurations of 4 or 2 points in the circle,
 and plot them.
-The loop of rotations are generated with this function:
+The loops of rotations are generated with this function:
+
+<button id="B-circle_of_rotations()" onclick="ToggleDiv('circle_of_rotations()')">
+Show circle_of_rotations()</button>
+<div id="D-circle_of_rotations()" style="display: none">
 ```{r, echo=TRUE, message=FALSE}
-circleofrotations <- function( axis, count=72+1 )
+circle_of_rotations <- function( axis, count=72+1 )
     {
     out     = vector( count, mode='list' )
     namevec = character( count )
@@ -238,6 +287,7 @@ circleofrotations <- function( axis, count=72+1 )
     return( out )
     }
 ```
+</div>
 **SIDE NOTE:**
 The above-mentioned configuration space for 3 points, using the quotient topology on
 $\mathbb{S}^1 {\times} \mathbb{S}^1 {\times} \mathbb{S}^1$,
@@ -254,17 +304,18 @@ Then a circle of rotations around [0,0,1] are generated which return back to the
 The corresponding balanced configuration of points on the circle are plotted in blue.
 
 ```{r, echo=TRUE, message=FALSE, warning=TRUE, fig.cap='caption', fig.keep='last', fig.show='hide', cache=FALSE }
-circle  = circleofrotations( c(0,0,1), count=72+1 )
-gif_file = GIFfromrotationlist( circle, index=1, vpsize=c(480,480) )
+circle      = circle_of_rotations( c(0,0,1), count=72+1 )
+webm_file   = WebMfromrotationlist( circle, index=1, vpsize=c(480,480) )
+video_html  = video2html(webm_file)
 ```
 
 <div style="text-align: center">
-![circle of rotations around Axis [0,0,1]](`r gif_file`){width=80%}
-</div>
 ```{r, echo=FALSE, message=TRUE, warning=TRUE }
-unlink( dirname(gif_file) )
+knitr::raw_html( video_html, meta=NULL, cacheable=FALSE )
+unlink( dirname(webm_file) )
 ```
-
+circle of rotations around axis [0,0,1]
+</div>
 
 <br><br>
 
@@ -275,17 +326,18 @@ and then a circle of rotations around [0,1,0] are generated which return back to
 The corresponding balanced configuration of points on the circle are plotted in blue.
 
 ```{r, echo=TRUE, message=FALSE, warning=TRUE, fig.cap='caption', fig.keep='last', fig.show='hide', cache=FALSE }
-circle  = circleofrotations( c(0,1,0), count=72+1 )
-gif_file = GIFfromrotationlist( circle, index=2, vpsize=c(480,480) )
+circle      = circle_of_rotations( c(0,1,0), count=72+1 )
+webm_file   = WebMfromrotationlist( circle, index=2, vpsize=c(480,480) )
+video_html  = video2html(webm_file)
 ```
 
 <div style="text-align: center">
-![circle of rotations around Axis [0,1,0]](`r gif_file`){width=80%}
-</div>
 ```{r, echo=FALSE, message=TRUE, warning=TRUE }
-unlink( dirname(gif_file) )
+knitr::raw_html( video_html, meta=NULL, cacheable=FALSE )
+unlink( dirname(webm_file) )
 ```
-
+circle of rotations around axis [0,1,0]
+</div>
 
 <br><br>
 
@@ -296,16 +348,18 @@ and then a circle of rotations around [1,0,0] are generated which return back to
 The corresponding balanced configuration of points on the circle are plotted in blue.
 
 ```{r, echo=TRUE, message=FALSE, warning=TRUE, fig.cap='caption', fig.keep='last', fig.show='hide', cache=FALSE }
-circle  = circleofrotations( c(1,0,0), count=72+1 )
-gif_file = GIFfromrotationlist( circle, index=3, vpsize=c(480,480) )
+circle      = circle_of_rotations( c(1,0,0), count=72+1 )
+webm_file   = WebMfromrotationlist( circle, index=3, vpsize=c(480,480) )
+video_html  = video2html(webm_file)
 ```
 
 <div style="text-align: center">
-![circle of rotations around Axis [1,0,0]](`r gif_file`){width=80%}
-</div>
 ```{r, echo=FALSE, message=TRUE, warning=TRUE }
-unlink( dirname(gif_file) )
+knitr::raw_html( video_html, meta=NULL, cacheable=FALSE )
+unlink( dirname(webm_file) )
 ```
+circle of rotations around axis [1,0,0]
+</div>
 This case is different.
 There are only 2 antipodal points,
 and all these balanced point configurations are in $P_2^\pi \subset P_4^\pi$.
@@ -321,19 +375,20 @@ is generated which return back to the identity again.
 The corresponding balanced configuration of points on the circle are plotted in blue.
 ```{r, echo=TRUE, message=FALSE, warning=TRUE, fig.cap='caption', fig.keep='last', fig.show='hide', cache=FALSE }
 set.seed(0)
-axis    = rnorm(3)
-axis    = axis / sqrt( sum(axis^2) )
-circle  = circleofrotations( axis, count=72+1 )
-gif_file = GIFfromrotationlist( circle, index=4, vpsize=c(480,480) )
+axis        = rnorm(3)
+axis        = axis / sqrt( sum(axis^2) )
+circle      = circle_of_rotations( axis, count=72+1 )
+webm_file   = WebMfromrotationlist( circle, index=4, vpsize=c(480,480) )
+video_html  = video2html(webm_file)
 ```
 
 <div style="text-align: center">
-![circle of rotations around Axis [1,0,0]](`r gif_file`){width=80%}
-</div>
 ```{r, echo=FALSE, message=TRUE, warning=TRUE }
-unlink( dirname(gif_file) )
+knitr::raw_html( video_html, meta=NULL, cacheable=FALSE )
+unlink( dirname(webm_file) )
 ```
-
+circle of rotations around a random axis
+</div>
 
 
 <br><br>

@@ -7,9 +7,9 @@ library(polarzonoid)
 
 ## ----echo=TRUE, message=FALSE-----------------------------------------------------------------------------------------------------------------
 
-GIFfromrotationlist <- function( rotationlist, index=1L, fps=4, vpsize=c(480,512) )
+WebMfromrotationlist <- function( rotationlist, index=1L, framerate=10, vpsize=c(480,480) )
     {
-    require( 'gifski' )
+    requireNamespace( 'av', quietly=TRUE )
 
     # make temp folder
     pathtemp = tempdir()   #  "./figs" ;   if( ! file.exists(pathtemp) ) dir.create(pathtemp)
@@ -39,15 +39,32 @@ GIFfromrotationlist <- function( rotationlist, index=1L, fps=4, vpsize=c(480,512
         }
 
     pathvec = dir( pathtemp, pattern="png$", full=T )
-    gif_file = sprintf( "%s/animation%g.gif", pathtemp, index )
-    out = gifski( pathvec, gif_file=gif_file, delay=1/fps, progress=F, width=vpsize[1], height=vpsize[2] )
-    res = file.remove( pathvec )  # cleanup the .PNG files, leaving just the .GIF
+    webm_file = sprintf( "%s/animation%g.webm", pathtemp, index )
+    out = av::av_encode_video( pathvec, output=webm_file, framerate=framerate, codec='libvpx-vp9', verbose=F )
+    res = file.remove( pathvec )  # cleanup the .PNG files, leaving just the .webm
 
     return(out)
     }
 
 ## ----echo=TRUE, message=FALSE-----------------------------------------------------------------------------------------------------------------
-circleofrotations <- function( axis, count=72+1 )
+
+video2html  <- function( path, attributes="controls loop autoplay muted" )
+    {
+    requireNamespace( "base64enc", quietly=TRUE )
+    
+    i   = regexpr( "[.][a-z]+$", path, ignore.case=T )
+    if( i < 0 ) return('')
+    ext = substring( path, i+1 )    # extract the extension, and skip over the '.'
+    
+    part1   = sprintf( '<video %s src="data:video/%s;base64,\n', attributes, ext )
+    part2   = base64enc::base64encode( path, linewidth=120, newline='\n' )
+    part3   = '"></video>'
+    
+    return( paste0( part1, part2, part3, collapse='' ) )
+    }
+
+## ----echo=TRUE, message=FALSE-----------------------------------------------------------------------------------------------------------------
+circle_of_rotations <- function( axis, count=72+1 )
     {
     out     = vector( count, mode='list' )
     namevec = character( count )
@@ -67,35 +84,43 @@ circleofrotations <- function( axis, count=72+1 )
     }
 
 ## ----echo=TRUE, message=FALSE, warning=TRUE, fig.cap='caption', fig.keep='last', fig.show='hide', cache=FALSE---------------------------------
-circle  = circleofrotations( c(0,0,1), count=72+1 )
-gif_file = GIFfromrotationlist( circle, index=1, vpsize=c(480,480) )
+circle      = circle_of_rotations( c(0,0,1), count=72+1 )
+webm_file   = WebMfromrotationlist( circle, index=1, vpsize=c(480,480) )
+video_html  = video2html(webm_file)
 
 ## ----echo=FALSE, message=TRUE, warning=TRUE---------------------------------------------------------------------------------------------------
-unlink( dirname(gif_file) )
+knitr::raw_html( video_html, meta=NULL, cacheable=FALSE )
+unlink( dirname(webm_file) )
 
 ## ----echo=TRUE, message=FALSE, warning=TRUE, fig.cap='caption', fig.keep='last', fig.show='hide', cache=FALSE---------------------------------
-circle  = circleofrotations( c(0,1,0), count=72+1 )
-gif_file = GIFfromrotationlist( circle, index=2, vpsize=c(480,480) )
+circle      = circle_of_rotations( c(0,1,0), count=72+1 )
+webm_file   = WebMfromrotationlist( circle, index=2, vpsize=c(480,480) )
+video_html  = video2html(webm_file)
 
 ## ----echo=FALSE, message=TRUE, warning=TRUE---------------------------------------------------------------------------------------------------
-unlink( dirname(gif_file) )
+knitr::raw_html( video_html, meta=NULL, cacheable=FALSE )
+unlink( dirname(webm_file) )
 
 ## ----echo=TRUE, message=FALSE, warning=TRUE, fig.cap='caption', fig.keep='last', fig.show='hide', cache=FALSE---------------------------------
-circle  = circleofrotations( c(1,0,0), count=72+1 )
-gif_file = GIFfromrotationlist( circle, index=3, vpsize=c(480,480) )
+circle      = circle_of_rotations( c(1,0,0), count=72+1 )
+webm_file   = WebMfromrotationlist( circle, index=3, vpsize=c(480,480) )
+video_html  = video2html(webm_file)
 
 ## ----echo=FALSE, message=TRUE, warning=TRUE---------------------------------------------------------------------------------------------------
-unlink( dirname(gif_file) )
+knitr::raw_html( video_html, meta=NULL, cacheable=FALSE )
+unlink( dirname(webm_file) )
 
 ## ----echo=TRUE, message=FALSE, warning=TRUE, fig.cap='caption', fig.keep='last', fig.show='hide', cache=FALSE---------------------------------
 set.seed(0)
-axis    = rnorm(3)
-axis    = axis / sqrt( sum(axis^2) )
-circle  = circleofrotations( axis, count=72+1 )
-gif_file = GIFfromrotationlist( circle, index=4, vpsize=c(480,480) )
+axis        = rnorm(3)
+axis        = axis / sqrt( sum(axis^2) )
+circle      = circle_of_rotations( axis, count=72+1 )
+webm_file   = WebMfromrotationlist( circle, index=4, vpsize=c(480,480) )
+video_html  = video2html(webm_file)
 
 ## ----echo=FALSE, message=TRUE, warning=TRUE---------------------------------------------------------------------------------------------------
-unlink( dirname(gif_file) )
+knitr::raw_html( video_html, meta=NULL, cacheable=FALSE )
+unlink( dirname(webm_file) )
 
 ## ----echo=FALSE, results='asis'-----------------------------------------------
 options(old_opt)

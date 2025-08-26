@@ -482,7 +482,7 @@ z_k = \frac{(v_1^k - u_1^k) + (v_2^k - u_2^k)}{ik} \hspace{20pt} k = 1,...,n
 The generalization to more than 2 disjoint arcs is straightforward.
 These equations are used extensively in the functions `boundaryfromsphere()`
 and `arcsfromboundary()`,
-see the [Implicitization](../doc/implicitization.html) vignette.
+see the [Implicitization](../vignettes/implicitization.html) vignette.
 
 
 
@@ -502,7 +502,7 @@ The inverse $\mathbb{S}^{2n} \to \partial Z_n$ is much harder since now we
 are given a ray based at $c$ and must compute where that ray intersects $\partial Z_n$.
 This is computed iteratively in `boundaryfromsphere()`
 and depends on an implicit function for $\partial Z_n$,
-for details see the [Implicitization](../doc/implicitization.html) vignette.
+for details see the [Implicitization](../vignettes/implicitization.html) vignette.
 This function is only implemented for $n$ = 1, 2, and 3.
 
 The space of arcs $A_n$ has a natural involution $\gamma$,
@@ -513,7 +513,7 @@ Note that if $V$ has $k$ disjoint closed arcs, then so does $\gamma(V)$.
 This involution is conjugate to the antipodal map on $\mathbb{S}^{2n}$
 under the composition $A_n \to \partial Z_n \to \mathbb{S}^{2n}$.
 These properties are discussed further in the
-[Real Projective Spaces and 3x3 Rotation Matrices](../doc/rotations.html) vignette.
+[Real Projective Spaces and 3x3 Rotation Matrices](../vignettes/rotations.html) vignette.
 
 
 <br><br>
