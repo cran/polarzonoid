@@ -1,6 +1,6 @@
 Package: polarzonoid
-Version: 0.2-0
-Date: 2025-08-26
+Version: 0.3-0
+Date: 2026-01-11
 Title: Compute Maps and Properties of Polar Zonoids
 Authors@R: person("Glenn", "Davis", role=c("aut", "cre"), email="gdavis@gluonics.com")
 Depends: R (>= 4.0.0)
@@ -19,5 +19,5 @@ Repository: CRAN
 VignetteBuilder: knitr
 BuildVignettes: yes
 ByteCompile: no
-Packaged: 2025-08-26 04:35:28 UTC; Glenn
-Date/Publication: 2025-08-26 08:30:22 UTC
+Packaged: 2026-01-11 16:18:09 UTC; Glenn
+Date/Publication: 2026-01-11 18:20:02 UTC

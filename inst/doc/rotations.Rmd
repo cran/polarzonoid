@@ -72,7 +72,7 @@ Since $\RP^3$ is homeomorphic to the group of 3x3 rotation matrices $\SOthree$,
 we also have a homeomorphism with that space.
 
 A prerequisite to understanding this vignette is the section on spaces of arcs
-$A_n$ in the  [User Guide](../vignettes/polarzonoid-guide.html) vignette.
+$A_n$ in the  [User Guide](polarzonoid-guide.html) vignette.
 
 The current vignette is illustrated with some WebM video plots showing paths
 in the space of 2 or 4 points on the circle.

@@ -1,4 +1,9 @@
 
+### Version 0.3-0 [January 11, 2026]
+
+* fixed issue with relative paths in package URLs
+* revised the man page for function `slerp()`
+
 
 ### Version 0.2-0 [August 26, 2025]
 

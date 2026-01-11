@@ -11,7 +11,7 @@ The homeomorphism between balanced configurations and rotation matrices
 
 \description{
 In the
-\href{../doc/rotation.html}{\bold{Real Projective Spaces and 3x3 Rotation Matrices}}
+\href{../doc/rotations.html}{\bold{Real Projective Spaces and 3x3 Rotation Matrices}}
 vignette,
 it is shown that there is a homeomorphism between \eqn{P_4^\pi},
 the space of balanced configurations of 4 or 2 points on the circle,
@@ -86,7 +86,7 @@ As currently implemented, a 2-point configuration in \eqn{P_2^\pi},
 whose points must be antipodal, maps to a rotation around the x-axis.
 The configuration of the 2 points \eqn{(0,\pm 1)} maps to the 3x3 identity matrix.
 See the
-\href{../doc/rotation.html}{\bold{Real Projective Spaces and 3x3 Rotation Matrices}}
+\href{../doc/rotations.html}{\bold{Real Projective Spaces and 3x3 Rotation Matrices}}
 vignette,
 for an animation of this.
 }

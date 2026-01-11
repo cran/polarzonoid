@@ -124,7 +124,7 @@ realfromcomplexvector <- function( z )
         log_level( ERROR, "z is invalid; it is not complex." )
         return( NA_real_ )
         }
-        
+
     mat = rbind( Re(z), Im(z) )
 
     return( as.numeric(mat) )
@@ -141,15 +141,15 @@ real2x2Nfromcomplex <- function( z )
         log_level( ERROR, "z is invalid; it is not complex." )
         return( NA_real_ )
         }
-        
+
     x   = Re(z)
     y   = Im(z)
-    
+
     mat1    = rbind( x, -y )
     mat2    = rbind( y, x )
-    
+
     out = rbind( as.numeric(mat1), as.numeric(mat2) )
-    
+
     return( out )
     }
 
@@ -171,26 +171,26 @@ iprod <- function( z1, z2 )
     2 * ( Re(z1)*Re(z2) + Im(z1)*Im(z2) )
     }
 
-    
+
 #   u0, u1  unit vectors of the same dimension.  The unit property is not verified
 #   tau     vector of interpolating numbers, usually in [0,1]
 #
 #   returns a length(tau) x length(u0) matrix, with interpolated unit vectors in the rows
 
-slerp <- function( u0, u1, thetamax=pi/36, tau=NULL )
+slerp <- function( u0, u1, tau=NULL, thetamax=pi/36 )
     {
     theta   = anglebetween( u0, u1, unitized=TRUE )
-    
-    if( is.na(theta) )  return(NULL)
-    
+
+    if( is.na(theta) )  return(NULL)    # lengths are not equal
+
     if( theta == pi )
         {
         #   antipodal points
         log_level( ERROR, "u0 and u1 are antipodal." )
         return(NULL)
         }
-        
-        
+
+
     if( is.null(tau) )
         {
         #   compute tau from thetamax
@@ -199,7 +199,7 @@ slerp <- function( u0, u1, thetamax=pi/36, tau=NULL )
             log_level( ERROR, "thetamax = %g is invalid.", thetamax )
             return(NULL)
             }
-        
+
         if( 0 < theta )
             {
             k   = ceiling( theta / thetamax )
@@ -208,40 +208,45 @@ slerp <- function( u0, u1, thetamax=pi/36, tau=NULL )
         else
             tau = 0
         }
-        
+
     ok  = is.numeric(tau)  &&  0 < length(tau)
     if( ! ok )
         {
         log_level( ERROR, "tau is invalid. It must be a non-empty numeric vector." )
         return(NULL)
         }
-    
+
     m       = length( u0 )
     count   = length(tau)
-    
-    if( theta == 0 )
+
+    if( 0 < theta )
+        {
+        #   the usual case
+        weight  = cbind( sin( (1-tau)*theta ), sin( tau*theta ) ) / sin(theta)        #   weight is count x 2
+
+        u0u1    = rbind( u0, u1 )        #   u0u1 is  2 x m
+
+        #   out is count x m
+        out = weight %*% u0u1
+        }
+    else
         {
         #   u0 and u1 are equal
         out = matrix( u0, nrow=count, ncol=m, byrow=TRUE )
-        return( out )
         }
 
-    #   weight is count x 2
-    weight  = cbind( sin( (1-tau)*theta ), sin( tau*theta ) ) / sin(theta)
-        
-    #   u0u1 is  2 x m
-    u0u1    = rbind( u0, u1 )
 
-    #   out is count x m
-    out = weight %*% u0u1
-    
-    rownames(out)   = as.character( tau )
+    if( 2 <= nrow(out) )
+        rownames(out)   = as.character( tau )
+    else
+        #   only 1 row, just return a plain vector
+        dim(out)    = NULL
 
     return( out )
     }
-    
-    
-    
+
+
+
 #   vec1 and vec2     non-zero vectors of the same dimension
 #
 anglebetween  <-  function( vec1, vec2, unitized=FALSE, eps=5.e-14 )
@@ -292,30 +297,30 @@ anglebetween  <-  function( vec1, vec2, unitized=FALSE, eps=5.e-14 )
 
     return(out)
     }
-    
-    
-    
+
+
+
 findRunsTRUE <- function( mask, circular=TRUE )
     {
     #   put sentinels on either end, to make things far simpler
     dif = diff( c(FALSE,mask,FALSE) )
-    
+
     start   = which( dif ==  1 )
     stop    = which( dif == -1 )
-    
+
     if( length(start) != length(stop) )
         {
         log_level( FATAL, "Internal error.  length(start)=%d != %d=length(stop)",
                                     length(start), length(stop) )
         return(NULL)
         }
-        
+
     stop    = stop - 1L
-    
+
     if( circular  &&  2<=length(start) )
         {
         m   = length(start)
-        
+
         if( start[1]==1  &&  stop[m]==length(mask) )
             {
             #   merge first and last
@@ -324,8 +329,7 @@ findRunsTRUE <- function( mask, circular=TRUE )
             stop    = stop[ 1:(m-1) ]
             }
         }
-        
+
     return( cbind( start=start, stop=stop ) )
     }
-        
-    
+
