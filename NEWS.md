@@ -1,4 +1,10 @@
 
+
+### Version 0.4-0 [August 22, 2026]
+
+* revised and expanded the **User Guide**
+
+
 ### Version 0.3-0 [January 11, 2026]
 
 * fixed issue with relative paths in package URLs
